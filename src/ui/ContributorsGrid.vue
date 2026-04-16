@@ -48,10 +48,12 @@ const loadContributors = async (event: Event) => {
     const owner = formData.get("owner") as string;
     const repo = formData.get("repo") as string;
     const token = formData.get("token") as string;
+    const includeBots = Boolean(formData.get("includeBots"));
+    const includeAnon = Boolean(formData.get("includeAnon"));
 
     if (!owner || !repo) return;
 
-    const contributorsList = await fetchContributors(owner, repo, token);
+    const contributorsList = await fetchContributors(owner, repo, { token, includeBots, includeAnon });
     for (let i = 0; i < contributorsList.value.length; i += 10) {
       const chunk = contributorsList.value.slice(i, i + 10);
       const chunkAvatarDataUrls = await Promise.all(chunk.map(({ avatar_url }) => fetchImageAsDataUrlSafe(avatar_url)));
@@ -125,6 +127,14 @@ const downloadPng = async () => {
         <label class="label">
           Token
           <input class="text-input" placeholder="ghp_1234567890" name="token" />
+        </label>
+        <label class="checkbox-label">
+          <input class="checkbox-input" type="checkbox" name="includeBots" />
+          Include Bots
+        </label>
+        <label class="checkbox-label">
+          <input class="checkbox-input" type="checkbox" name="includeAnon" />
+          Include Anon
         </label>
       </div>
       <button class="button submit-button" :disabled="loading" type="submit">
@@ -230,6 +240,7 @@ const downloadPng = async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  align-items: end;
 }
 
 .download-actions {
@@ -254,6 +265,13 @@ const downloadPng = async () => {
   display: grid;
   gap: 0.25rem;
   font-size: 0.9rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.625rem 0;
 }
 
 .text-input {
