@@ -1,13 +1,13 @@
 import { type Contributor } from "~/types/contributor";
 
-export const fetchContributors = async (owner: string, repo: string, token?: string) => {
+export const fetchContributors = async (owner: string, repo: string, settings: { token?: string, maxContributors?: number, includeAnon?: boolean, includeBots?: boolean }) => {
   if (!owner || !repo) {
     throw new Error("Owner and repo are required.");
   }
 
+  const { token, maxContributors = 1000, includeAnon = false, includeBots = false } = settings;
   const contributors = ref<Contributor[]>([]);
   const perPage = 100;
-  const maxContributors = 1000;
   let page = 1;
 
   const headers: Record<string, string> = {
@@ -17,10 +17,15 @@ export const fetchContributors = async (owner: string, repo: string, token?: str
     headers.Authorization = `Bearer ${token}`;
   }
 
+  let baseParams = "";
+  if (includeAnon) {
+    baseParams += "&anon=true";
+  }
+
   while (contributors.value.length < maxContributors) {
     const endpoint =
       `https://api.github.com/repos/${encodeURIComponent(owner)}` +
-      `/${encodeURIComponent(repo)}/contributors?per_page=${perPage}&page=${page}`;
+      `/${encodeURIComponent(repo)}/contributors?per_page=${perPage}&page=${page}${baseParams}`;
 
     const batch = await $fetch<Contributor[]>(endpoint, { headers });
     if (!Array.isArray(batch) || batch.length === 0) {
@@ -33,6 +38,7 @@ export const fetchContributors = async (owner: string, repo: string, token?: str
       }
       contributors.value.push({
         id: user.id,
+        type: user.type,
         login: user.login,
         avatar_url: user.avatar_url,
         html_url: user.html_url,
@@ -44,6 +50,10 @@ export const fetchContributors = async (owner: string, repo: string, token?: str
       break;
     }
     page += 1;
+  }
+
+  if (!includeBots) {
+    contributors.value = contributors.value.filter(contributor => contributor.type !== "Bot");
   }
 
   return contributors;
