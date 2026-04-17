@@ -39,7 +39,7 @@ export const downloadSvgString = (svg: string, fileName: string): void => {
   URL.revokeObjectURL(url);
 }
 
-export const rasterizeSvgStringToPng = async (svg: string, fileName: string): Promise<void> => {
+export const rasterizeSvgStringToPng = async (svg: string, fileName: string, transparent: boolean): Promise<void> => {
   const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
   const svgUrl = URL.createObjectURL(blob);
 
@@ -59,7 +59,7 @@ export const rasterizeSvgStringToPng = async (svg: string, fileName: string): Pr
     if (!ctx) {
       throw new Error("Canvas is not supported.");
     }
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = transparent ? "transparent" : "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0);
 

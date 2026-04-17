@@ -14,7 +14,8 @@ const roundRadius = ref(48);
 const cellGap = ref(12);
 const svgPadding = ref(12);
 const avatarSize = ref(96);
-const backgroundColor = ref<string | null>(null);
+const backgroundColor = ref("#ffffff");
+const transparent = ref(false);
 
 const normalizedColumns = computed(() => Math.max(1, Number(columns.value) || 1));
 const gridRows = computed(() =>
@@ -101,7 +102,7 @@ const downloadPng = async () => {
 
     if (!svg) return;
 
-    await rasterizeSvgStringToPng(svg, "contributors.png");
+    await rasterizeSvgStringToPng(svg, "contributors.png", transparent.value);
   } catch (err) {
     error.value = err instanceof Error ? err.message : "PNG export failed.";
   } finally {
@@ -158,7 +159,11 @@ const downloadPng = async () => {
           Cell Gap
           <input class="text-input" v-model.number="cellGap" type="number" min="0" name="cellGap" />
         </label>
-        <label class="label">
+        <label class="checkbox-label">
+          <input class="checkbox-input" v-model="transparent" type="checkbox" name="transparent" />
+          Transparent
+        </label>
+        <label class="label" v-if="!transparent">
           Background Color
           <input class="color-input" v-model="backgroundColor" type="color" name="backgroundColor" />
         </label>
@@ -173,7 +178,7 @@ const downloadPng = async () => {
         xmlns:xlink="http://www.w3.org/1999/xlink"
         ref="svgRef"
         role="img"
-        :style="{ backgroundColor: backgroundColor || 'transparent' }"
+        :style="{ backgroundColor: transparent ? 'transparent' : backgroundColor || '#ffffff' }"
       >
         <defs>
           <clipPath v-for="(avatarDataUrl, index) in avatarDataUrls" :id="`clip-${index}`" :key="avatarDataUrl">
@@ -252,6 +257,7 @@ const downloadPng = async () => {
 
 .customisation {
   display: flex;
+  align-items: end;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 2rem;
