@@ -118,11 +118,11 @@ const downloadPng = async () => {
     <form class="controls" @submit.prevent="loadContributors">
       <div class="form-fields">
         <label class="label">
-          Owner
+          Owner *
           <input class="text-input" placeholder="nuxt" name="owner" value="npmx-dev" required />
         </label>
         <label class="label">
-          Repo
+          Repo *
           <input class="text-input" placeholder="nuxt" name="repo" value="npmx.dev" required />
         </label>
         <label class="label">
